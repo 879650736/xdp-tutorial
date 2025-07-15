@@ -1,5 +1,5 @@
 
-LIBBPF_CFLAGS:=$(if $(CFLAGS),$(CFLAGS),-g -O2 -Werror -Wall) -fPIC
+LIBBPF_CFLAGS:=$(if $(CFLAGS),$(CFLAGS),-g -O2 -Wall) -fPIC
 
 LIB_DIR = .
 LIB_INSTALL := $(LIB_DIR)/install
