@@ -4,6 +4,10 @@
         "common_user_bpf_xdp.h": "c",
         "xdp_stats_kern_user.h": "c",
         "common_params.h": "c",
-        "libxdp.h": "c"
+        "libxdp.h": "c",
+        "bpf_helpers.h": "c",
+        "string_view": "c",
+        "bpf.h": "c",
+        "ip.h": "c"
     }
 }
