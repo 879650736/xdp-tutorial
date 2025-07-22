@@ -440,6 +440,9 @@ populate_redirect_map()
     local src_mac=$(ip netns exec $src cat /sys/class/net/veth0/address)
     local dest_mac=$(ip netns exec $dest cat /sys/class/net/veth0/address)
 
+    echo "Populating redirect map for $src -> $dest"
+    echo "src_mac -> dest_mac : $src_mac -> $dest_mac"
+
     # set bidirectional forwarding
     ./xdp_prog_user -d $src -r $dest --src-mac $src_mac --dest-mac $dest_mac
     ./xdp_prog_user -d $dest -r $src --src-mac $dest_mac --dest-mac $src_mac

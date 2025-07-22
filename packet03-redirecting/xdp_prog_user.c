@@ -50,10 +50,34 @@ static const struct option_wrapper long_options[] = {
 	{{0, 0, NULL,  0 }, NULL, false}
 };
 
+static int parse_u8(char *str, unsigned char *x)
+{
+	unsigned long z;
+
+	z = strtoul(str, 0, 16);
+	if (z > 0xff)
+		return -1;
+
+	if (x)
+		*x = z;
+
+	return 0;
+}
+
 static int parse_mac(char *str, unsigned char mac[ETH_ALEN])
 {
-	/* Assignment 3: parse a MAC address in this function and place the
-	 * result in the mac array */
+	if (parse_u8(str, &mac[0]) < 0)
+		return -1;
+	if (parse_u8(str + 3, &mac[1]) < 0)
+		return -1;
+	if (parse_u8(str + 6, &mac[2]) < 0)
+		return -1;
+	if (parse_u8(str + 9, &mac[3]) < 0)
+		return -1;
+	if (parse_u8(str + 12, &mac[4]) < 0)
+		return -1;
+	if (parse_u8(str + 15, &mac[5]) < 0)
+		return -1;
 
 	return 0;
 }
@@ -117,15 +141,31 @@ int main(int argc, char **argv)
 		fprintf(stderr, "ERR: can't parse mac address %s\n", cfg.src_mac);
 		return EXIT_FAIL_OPTION;
 	}
+	printf("cfg.src_mac: %02x:%02x:%02x:%02x:%02x:%02x\n",
+			cfg.src_mac[0], cfg.src_mac[1], cfg.src_mac[2],
+			cfg.src_mac[3], cfg.src_mac[4], cfg.src_mac[5]);
+
+	printf("src_mac: %02x:%02x:%02x:%02x:%02x:%02x\n",
+		src[0], src[1], src[2], src[3], src[4], src[5]);
+
 
 	if (parse_mac(cfg.dest_mac, dest) < 0) {
 		fprintf(stderr, "ERR: can't parse mac address %s\n", cfg.dest_mac);
 		return EXIT_FAIL_OPTION;
 	}
 
+	printf("cfg.dest_mac: %02x:%02x:%02x:%02x:%02x:%02x\n",
+		cfg.dest_mac[0], cfg.dest_mac[1], cfg.dest_mac[2],
+		cfg.dest_mac[3], cfg.dest_mac[4], cfg.dest_mac[5]);
+
+	printf("dest_mac: %02x:%02x:%02x:%02x:%02x:%02x\n",
+        dest[0], dest[1], dest[2], dest[3], dest[4], dest[5]);
 
 	/* Assignment 3: open the tx_port map corresponding to the cfg.ifname interface */
-	map_fd = -1;
+	map_fd = open_bpf_map_file(pin_dir, "tx_port", NULL);
+	if (map_fd < 0) {
+		return EXIT_FAIL_BPF;
+	}
 
 	printf("map dir: %s\n", pin_dir);
 
@@ -136,7 +176,10 @@ int main(int argc, char **argv)
 		printf("redirect from ifnum=%d to ifnum=%d\n", cfg.ifindex, cfg.redirect_ifindex);
 
 		/* Assignment 3: open the redirect_params map corresponding to the cfg.ifname interface */
-		map_fd = -1;
+		map_fd = open_bpf_map_file(pin_dir, "redirect_params", NULL);
+		if (map_fd < 0) {
+			return EXIT_FAIL_BPF;
+		}
 
 		/* Setup the mapping containing MAC addresses */
 		if (write_iface_params(map_fd, src, dest) < 0) {
